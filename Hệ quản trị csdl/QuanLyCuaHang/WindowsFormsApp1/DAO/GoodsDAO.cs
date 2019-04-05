@@ -61,6 +61,19 @@ namespace WindowsFormsApp1.DAO
             
         }
 
+        public int GetPriceById(int idGoods, int idCategory)
+        {
+            int price = 0;
+
+            string query = string.Format("select price from Goods where idGoods = {0} and idCategory = {1}" , idGoods, idCategory);
+            price = DataProvider.Instance.ExecuteScalarReturnInt(query);
+
+            
+
+            return price;
+
+        }
+
         public Good GetGoodsByID(int id)
         {
             Good good = null;

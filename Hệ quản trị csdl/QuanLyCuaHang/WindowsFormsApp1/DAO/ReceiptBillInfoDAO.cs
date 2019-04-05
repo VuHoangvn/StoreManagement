@@ -60,5 +60,15 @@ namespace WindowsFormsApp1.DAO
 
             return result > 0;
         }
+
+        public bool CancelReceiptBill(int idReceiptBill)
+        {
+            string query = string.Format("delete ReceiptBillInfo where idReceiptBill = {0}", idReceiptBill);
+            int result = DataProvider.Instance.ExecuteNonQuery(query);
+
+            return result > 0;
+        }
+
     }
+
 }

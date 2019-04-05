@@ -53,9 +53,28 @@ namespace WindowsFormsApp1.DAO
             return bill;
         }
 
+        public int GetTotalById(int id)
+        {
+            int total = 0;
+
+            string query = "select * from IssueBillInfo where idIssueBill = " + id;
+            DataTable data = DataProvider.Instance.ExecuteQuery(query);
+
+            foreach (DataRow item in data.Rows)
+            {
+                IssueBillInfo issuebillinfo = new IssueBillInfo(item);
+                total += Convert.ToInt32((issuebillinfo.Amount * issuebillinfo.Price) * (1 - issuebillinfo.Discount / 100.0));
+            }
+
+            return total;
+
+        }
+
+        
+
         public bool InsertIssueBill(int idCustomer, string date, int total)
         {
-            string query = string.Format("insert IssueBill(idCustomer, issueDate, issueTotal) values({0},convert(date, {1}, 103),{2} )", idCustomer, date, total);
+            string query = string.Format("insert IssueBill(idCustomer, issueDate, issueTotal) values({0},convert(date, '{1}', 103),{2} )", idCustomer, date, total);
             int result = DataProvider.Instance.ExecuteNonQuery(query);
 
             return result > 0;
@@ -75,6 +94,15 @@ namespace WindowsFormsApp1.DAO
             int result = DataProvider.Instance.ExecuteNonQuery(query);
 
             return result > 0;
+        }
+
+
+        public int GetCurrentIdentity()
+        {
+            string query = "SELECT IDENT_CURRENT('IssueBill')";
+            int result = DataProvider.Instance.ExecuteScalarReturnInt(query);
+
+            return result;
         }
 
         //public List<IssueBill> SearchProducerByName(string name)

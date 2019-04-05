@@ -53,14 +53,14 @@ namespace WindowsFormsApp1
             txbReceiptDiscount.DataBindings.Add(new Binding("Text", dtgvReceiptDetail.DataSource, "discount", true, DataSourceUpdateMode.Never));
         }
 
-        void LoadListIssueInfo()
+        void LoadListIssueInfo(int id)
         {
-            issuedetailList.DataSource = IssueBillInformDAO.Instance.GetListById(3);
+            issuedetailList.DataSource = IssueBillInformDAO.Instance.GetListById(id);
         }
 
-        void LoadListReceiptInfo()
+        void LoadListReceiptInfo(int id)
         {
-            receiptdetailList.DataSource = ReceiptBillInfoDAO.Instance.GetListById(3);
+            receiptdetailList.DataSource = ReceiptBillInfoDAO.Instance.GetListById(id);
         }
         void LoadProducerIntoComboBox(ComboBox cb)
         {
@@ -101,11 +101,11 @@ namespace WindowsFormsApp1
             LoadGoodsIntoComboBox(cbIssueGoods);
             LoadGoodsIntoComboBox(cbReceiptGoods);
             LoadCustomerIntoComboBox(cbCustomer);
-            //LoadGoodsCategoryIntoComboBox(cbIssueCategory);
+            LoadGoodsCategoryIntoComboBox(cbCategory);
             //LoadGoodsCategoryIntoComboBox(cbReceiptCategory);
             LoadGoods();
-            LoadListIssueInfo();
-            LoadListReceiptInfo();
+            LoadListIssueInfo(0);
+            LoadListReceiptInfo(0);
 
             AddIssueInfoBinding();
             AddReceiptInfoBinding();
@@ -164,18 +164,91 @@ namespace WindowsFormsApp1
 
         }
 
-        void AddIssueBill(int idIssueBill, int idGoods, int idCategory, int amount, int price, int discount)
+        void CreateIssueBill(int idCustomer, string date, int total)
         {
-            if (IssueBillInformDAO.Instance.InsertIssueBillInfo(idIssueBill, idGoods, idCategory, amount, price,discount))
+            if (IssueBillDAO.Instance.InsertIssueBill(idCustomer, date, total))
             {
-                MessageBox.Show("Thêm thành công!");
+                txbIssueBillId.Text = IssueBillDAO.Instance.GetCurrentIdentity().ToString();
+                LoadListIssueInfo(Int32.Parse(txbIssueBillId.Text));
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+            
+        }
+        
+        void CancelIssueBill(int idIssueBill)
+        {
+            if (IssueBillDAO.Instance.DeleteIssueBill(idIssueBill) && IssueBillInformDAO.Instance.CancelIssueBill(idIssueBill))
+            {
+                MessageBox.Show("Hủy thành công!");
+                txbIssueBillId.Text = "";
+                LoadListIssueInfo(0);
+                lbIssueTotal.Text = "0";
+                txbIssueGiven.Text = "";
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+        }
+
+        void CreateReceiptBill(int idProducer, string date, int total)
+        {
+            if (ReceiptBillDAO.Instance.InsertReceiptBill(idProducer, date, total))
+            {
+                txbReceiptBillId.Text = ReceiptBillDAO.Instance.GetCurrentIdentity().ToString();
+                LoadListReceiptInfo(Int32.Parse(txbReceiptBillId.Text));
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListIssueInfo();
+            
+        }
+
+        void CreateCustomerDebt()
+        {
+
+        }
+
+        void CreateProducerDebt()
+        {
+
+        }
+
+        void CancelReceiptBill(int idReceiptBill)
+        {
+            if (ReceiptBillDAO.Instance.DeleteReceiptBill(idReceiptBill) && ReceiptBillInfoDAO.Instance.CancelReceiptBill(idReceiptBill))
+            {
+                MessageBox.Show("Hủy thành công!");
+                txbReceiptBillId.Text = "";
+                LoadListReceiptInfo(0);
+                lbReceiptTotal.Text = "0";
+                txbReceiptGiven.Text = "";
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+        }
+
+
+        void AddIssueBill(int idIssueBill, int idGoods, int idCategory, int amount, int price, int discount)
+        {
+            if (IssueBillInformDAO.Instance.InsertIssueBillInfo(idIssueBill, idGoods, idCategory, amount, price,discount))
+            {
+                MessageBox.Show("Thêm thành công!");
+                lbIssueTotal.Text = IssueBillDAO.Instance.GetTotalById(idIssueBill).ToString();
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+
+            LoadListIssueInfo(Int32.Parse(txbIssueBillId.Text));
         }
 
         void EditIssueBill(int idIssueBillInfo, int idGoods, int idCategory, int amount, int price, int discount)
@@ -183,13 +256,14 @@ namespace WindowsFormsApp1
             if (IssueBillInformDAO.Instance.UpdateIssueBillInfo(idIssueBillInfo, idGoods, idCategory, amount, price, discount))
             {
                 MessageBox.Show("Sửa thành công!");
+                lbIssueTotal.Text = IssueBillDAO.Instance.GetTotalById(Int32.Parse(txbIssueBillId.Text)).ToString();
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListIssueInfo();
+            LoadListIssueInfo(Int32.Parse(txbIssueBillId.Text));
         }
 
         void DeleteIssueBill(int idIssueBillInfo)
@@ -197,33 +271,63 @@ namespace WindowsFormsApp1
             if (IssueBillInformDAO.Instance.DeleteIssueBillInfo(idIssueBillInfo))
             {
                 MessageBox.Show("Xóa thành công!");
+                lbIssueTotal.Text = IssueBillDAO.Instance.GetTotalById(Int32.Parse(txbIssueBillId.Text)).ToString();
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListIssueInfo();
+            LoadListIssueInfo(Int32.Parse(txbIssueBillId.Text));
         }
 
         void RefreshIssueBill()
         {
 
-            LoadListIssueInfo();
+            LoadListIssueInfo(Int32.Parse(txbIssueBillId.Text));
+            lbIssueTotal.Text = IssueBillDAO.Instance.GetTotalById(Int32.Parse(txbIssueBillId.Text)).ToString();
+
         }
 
+        void IssueCheckout(int idIssueBill, int idCustomer, string date, int total)
+        {
+            if (IssueBillDAO.Instance.UpdateIssueBill(idIssueBill, idCustomer, date, total))
+            {
+                MessageBox.Show("Thanh toán thành công!");
+
+
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+        }
+
+        void ReceiptCheckout(int idReceiptBill, int idProducer, string date, int total)
+        {
+            if (ReceiptBillDAO.Instance.UpdateReceiptBill(idReceiptBill,idProducer, date, total))
+            {
+                MessageBox.Show("Thanh toán thành công!");
+                
+            }
+            else
+            {
+                MessageBox.Show("Lỗi!");
+            }
+        }
         void AddReceiptBill(int idReceiptBill, int idGoods, int idCategory, int amount, int price, int discount)
         {
             if (ReceiptBillInfoDAO.Instance.InsertReceiptBillInfo(idReceiptBill, idGoods, idCategory, amount, price, discount))
             {
                 MessageBox.Show("Thêm thành công!");
+                lbReceiptTotal.Text = ReceiptBillDAO.Instance.GetTotalById(idReceiptBill).ToString();
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListReceiptInfo();
+            LoadListReceiptInfo(Int32.Parse(txbReceiptBillId.Text));
         }
 
         void EditReceiptBill(int idReceiptBillInfo, int idGoods, int idCategory, int amount, int price, int discount)
@@ -231,13 +335,14 @@ namespace WindowsFormsApp1
             if (ReceiptBillInfoDAO.Instance.UpdateReceiptBillInfo(idReceiptBillInfo, idGoods, idCategory, amount, price, discount))
             {
                 MessageBox.Show("Sửa thành công!");
+                lbReceiptTotal.Text = ReceiptBillDAO.Instance.GetTotalById(Int32.Parse(txbReceiptBillId.Text)).ToString();
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListReceiptInfo();
+            LoadListReceiptInfo(Int32.Parse(txbReceiptBillId.Text));
         }
 
         void DeleteReceiptBill(int idReceiptBillInfo)
@@ -245,19 +350,21 @@ namespace WindowsFormsApp1
             if (ReceiptBillInfoDAO.Instance.DeleteReceiptBillInfo(idReceiptBillInfo))
             {
                 MessageBox.Show("Xóa thành công!");
+                lbReceiptTotal.Text = ReceiptBillDAO.Instance.GetTotalById(Int32.Parse(txbReceiptBillId.Text)).ToString();
             }
             else
             {
                 MessageBox.Show("Lỗi!");
             }
 
-            LoadListReceiptInfo();
+            LoadListReceiptInfo(Int32.Parse(txbReceiptBillId.Text));
         }
 
         void RefreshReceiptBill()
         {
 
-            LoadListReceiptInfo();
+            LoadListReceiptInfo(Int32.Parse(txbReceiptBillId.Text));
+            lbReceiptTotal.Text = ReceiptBillDAO.Instance.GetTotalById(Int32.Parse(txbReceiptBillId.Text)).ToString();
         }
 
         #endregion
@@ -295,6 +402,8 @@ namespace WindowsFormsApp1
             string telephone = txbTeleProducer.Text;
 
             AddProducer(name, address, telephone);
+            LoadProducerIntoComboBox(cbProvider);
+            LoadProducerIntoComboBox(cbProducer1);
         }
 
         private void btnAddCustomer_Click(object sender, EventArgs e)
@@ -304,12 +413,16 @@ namespace WindowsFormsApp1
             string telephone = txbCustomerTelephone.Text;
 
             AddCustomer(name, address, telephone);
+            LoadCustomerIntoComboBox(cbCustomer);
         }
 
         private void cbIssueGoods_SelectedIndexChanged(object sender, EventArgs e)
         {
             cbIssueCategory.DataSource = GoodsCategoryDAO.Instance.GetCategoryByGoodsName(cbIssueGoods.Text);
             cbIssueCategory.DisplayMember = "Name";
+            int idGoods = (cbIssueGoods.SelectedItem as Good).IdGoods;
+            int idCategory = (cbIssueGoods.SelectedItem as Good).IdCategory;
+            txbIssuePrice.Text = GoodsDAO.Instance.GetPriceById(idGoods, idCategory).ToString();
         }
 
 
@@ -336,6 +449,8 @@ namespace WindowsFormsApp1
             {
                 MessageBox.Show("Lỗi!");
             }
+
+            LoadGoodsIntoComboBox(cbReceiptGoods);
         }
 
         private void button10_Click(object sender, EventArgs e)
@@ -343,6 +458,7 @@ namespace WindowsFormsApp1
             string name = cbCategory.Text;
 
             AddCategory(name);
+            LoadGoodsCategoryIntoComboBox(cbCategory);
         }
         private void txbReceiptPrice_TextChanged(object sender, EventArgs e)
         {
@@ -358,7 +474,7 @@ namespace WindowsFormsApp1
 
         private void btnAddReceiptDetail_Click(object sender, EventArgs e)
         {
-            int idReceiptBill = 3;
+            int idReceiptBill = Int32.Parse(txbReceiptBillId.Text);
             int idGoods = (cbReceiptGoods.SelectedItem as Good).IdGoods;
             int idCategory = (cbReceiptCategory.SelectedItem as GoodsCategory).Id;
             int amount = Int32.Parse(txbReceiptAmount.Text);
@@ -396,7 +512,7 @@ namespace WindowsFormsApp1
 
         private void btnAddIssueBill_Click(object sender, EventArgs e)
         {
-            int idIssueBill = 3;
+            int idIssueBill = Int32.Parse(txbIssueBillId.Text);
             int idGoods = (cbIssueGoods.SelectedItem as Good).IdGoods;
             int idCategory = (cbIssueCategory.SelectedItem as GoodsCategory).Id;
             int amount = Int32.Parse(txbIssueAmount.Text);
@@ -422,12 +538,13 @@ namespace WindowsFormsApp1
         {
             int idIssueBillInfo = (int)dtgvIssueDetail.SelectedCells[0].OwningRow.Cells["idIssueBillInfo"].Value;
 
-            DeleteReceiptBill(idIssueBillInfo);
+            DeleteIssueBill(idIssueBillInfo);
         }
 
         private void btnRefreshIssueBill_Click(object sender, EventArgs e)
         {
-
+            LoadGoodsIntoComboBox(cbIssueGoods);
+            LoadGoodsIntoComboBox(cbIssueCategory);
         }
 
         private void dtgvReceiptDetail_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -480,8 +597,8 @@ namespace WindowsFormsApp1
         {
             if (dtgvIssueDetail.SelectedCells.Count > 0)
             {
-                int id = (int)dtgvReceiptDetail.SelectedCells[0].OwningRow.Cells["idCategory"].Value;
-                int id1 = (int)dtgvReceiptDetail.SelectedCells[0].OwningRow.Cells["idGoods"].Value;
+                int id = (int)dtgvIssueDetail.SelectedCells[0].OwningRow.Cells["idCategory"].Value;
+                int id1 = (int)dtgvIssueDetail.SelectedCells[0].OwningRow.Cells["idGoods"].Value;
 
 
                 GoodsCategory category = GoodsCategoryDAO.Instance.GetCategoryByID(id);
@@ -519,6 +636,67 @@ namespace WindowsFormsApp1
 
 
             }
+        }
+
+        private void btnCreateIssueBill_Click(object sender, EventArgs e)
+        {
+            int idCustomer = (cbCustomer.SelectedItem as Customer).IdCustomer;
+            string date = DateTime.Today.ToString("dd-MM-yyyy");
+            int total = 0;
+            CreateIssueBill(idCustomer, date, total);
+            lbIssueTotal.Text = "0";
+            txbIssueGiven.Text = "0";
+
+        }
+
+        private void btnCreateReceiptBill_Click(object sender, EventArgs e)
+        {
+            int idProducer = (cbProducer1.SelectedItem as Producer).IdProducer;
+            string date = DateTime.Today.ToString("dd-MM-yyyy");
+            int total = 0;
+            CreateReceiptBill(idProducer, date, total);
+            lbReceiptTotal.Text = "0";
+            txbReceiptGiven.Text = "0";
+        }
+
+
+        private void btnCancelIssueBill_Click(object sender, EventArgs e)
+        {
+            int idIssueBill = Int32.Parse(txbIssueBillId.Text);
+
+            CancelIssueBill(idIssueBill);
+        }
+
+        private void btnCancelReceiptBill_Click(object sender, EventArgs e)
+        {
+            int idReceiptBill = Int32.Parse(txbReceiptBillId.Text);
+
+            CancelReceiptBill(idReceiptBill);
+        }
+
+        private void cbIssueCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int idGoods = (cbIssueGoods.SelectedItem as Good).IdGoods;
+            int idCategory = (cbIssueGoods.SelectedItem as Good).IdCategory;
+            txbIssuePrice.Text = GoodsDAO.Instance.GetPriceById(idGoods, idCategory).ToString();
+        }
+
+        private void btnReceiptCheckout_Click(object sender, EventArgs e)
+        {
+            int idReceiptBill = Int32.Parse(txbReceiptBillId.Text);
+            int idProducer = (cbProducer1.SelectedItem as Producer).IdProducer;
+            string date = DateTime.Today.ToString("dd-MM-yyyy");
+            int total = Int32.Parse(lbReceiptTotal.Text);
+            ReceiptCheckout(idReceiptBill,idProducer, date, total);
+        }
+
+        private void btnIssueCheckout_Click(object sender, EventArgs e)
+        {
+            int idIssueBill = Int32.Parse(txbIssueBillId.Text);
+            int idCustomer = (cbCustomer.SelectedItem as Customer).IdCustomer;
+            string date = DateTime.Today.ToString("dd-MM-yyyy");
+            int total = Int32.Parse(lbIssueTotal.Text);
+            ReceiptCheckout(idIssueBill, idCustomer, date, total);
         }
 
         #endregion

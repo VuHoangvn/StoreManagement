@@ -37,6 +37,23 @@ namespace WindowsFormsApp1.DAO
 
         }
 
+        public int GetTotalById(int id)
+        {
+            int total = 0;
+
+            string query = "select * from ReceiptBillInfo where idReceiptBill = " + id;
+            DataTable data = DataProvider.Instance.ExecuteQuery(query);
+
+            foreach (DataRow item in data.Rows)
+            {
+                ReceiptBillInfo receiptbillinfo = new ReceiptBillInfo(item);
+                total += Convert.ToInt32((receiptbillinfo.Amount * receiptbillinfo.Price) * (1 - receiptbillinfo.Discount / 100.0));
+            }
+
+            return total;
+
+        }
+
         public ReceiptBill GetReceiptBillByID(int id)
         {
             ReceiptBill bill = null;
@@ -55,7 +72,7 @@ namespace WindowsFormsApp1.DAO
 
         public bool InsertReceiptBill(int idProducer, string date, int total)
         {
-            string query = string.Format("insert ReceiptBill(idProducer, receiptDate, receiptTotal) values({0},convert(date, {1}, 103),{2} )", idProducer, date, total);
+            string query = string.Format("insert ReceiptBill(idProducer, receiptDate, receiptTotal) values({0},convert(date, '{1}', 103),{2} )", idProducer, date, total);
             int result = DataProvider.Instance.ExecuteNonQuery(query);
 
             return result > 0;
@@ -75,6 +92,14 @@ namespace WindowsFormsApp1.DAO
             int result = DataProvider.Instance.ExecuteNonQuery(query);
 
             return result > 0;
+        }
+
+        public int GetCurrentIdentity()
+        {
+            string query = "SELECT IDENT_CURRENT('ReceiptBill')";
+            int result = DataProvider.Instance.ExecuteScalarReturnInt(query);
+
+            return result;
         }
     }
 }

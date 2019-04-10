@@ -562,6 +562,7 @@
             // 
             // dtgvIssueDetail
             // 
+            this.dtgvIssueDetail.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dtgvIssueDetail.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dtgvIssueDetail.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dtgvIssueDetail.Location = new System.Drawing.Point(0, 0);
@@ -686,6 +687,7 @@
             // 
             // dtgvReceiptDetail
             // 
+            this.dtgvReceiptDetail.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dtgvReceiptDetail.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dtgvReceiptDetail.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dtgvReceiptDetail.Location = new System.Drawing.Point(0, 0);
